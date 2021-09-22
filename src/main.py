@@ -1,14 +1,9 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.responses import PlainTextResponse
-from pydantic import BaseModel
+
+from src.models.item import Item
 
 app = FastAPI()
-
-
-class Item(BaseModel):
-    username: str
-    price: float
-    item_name: str
 
 
 @app.get("/", response_class=PlainTextResponse)
@@ -23,9 +18,6 @@ def say_hello(username: str = "world"):
 
 @app.post("/api/items/")
 def update_item(item: Item):
-    if item.price < 0:
-        raise HTTPException(status_code=400, detail="Item price cannot be negative.")
-
     return Item(
         username=item.username,
         price=item.price * 0.8,
