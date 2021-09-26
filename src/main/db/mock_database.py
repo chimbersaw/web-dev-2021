@@ -1,0 +1,3 @@
+users = []
+
+messages_received = {}
