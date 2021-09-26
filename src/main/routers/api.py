@@ -12,8 +12,8 @@ def read_root():
 
 
 @router.get("/api/hello", response_class=PlainTextResponse)
-def say_hello(user: User = User(username="world")):
-    return "Hello {}!".format(user.username)
+def say_hello(username: str = "world"):
+    return "Hello {}!".format(username)
 
 
 @router.post("/api/user/add")
