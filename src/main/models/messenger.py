@@ -11,14 +11,14 @@ class User(BaseModel):
 
     username: str
 
-    @validator('username')
+    @validator("username")
     def validate_username_length(cls, username):
         if len(username) > User.MAX_USERNAME_SIZE:
             raise HTTPException(status_code=400,
                                 detail="Username length must not exceed {}.".format(User.MAX_USERNAME_SIZE))
         return username
 
-    @validator('username')
+    @validator("username")
     def validate_username_emptiness(cls, username):
         if len(username) == 0:
             raise HTTPException(status_code=400, detail="Username cannot be empty.")
@@ -32,26 +32,26 @@ class Message(BaseModel):
     sender: str
     recipient: str
 
-    @validator('text')
+    @validator("text")
     def validate_text_length(cls, text):
         if len(text) > Message.MAX_TEXT_SIZE:
             raise HTTPException(status_code=400,
                                 detail="Message length must not exceed {}.".format(Message.MAX_TEXT_SIZE))
         return text
 
-    @validator('text')
+    @validator("text")
     def validate_text_emptiness(cls, text):
         if len(text) == 0:
             raise HTTPException(status_code=400, detail="Message cannot be empty.")
         return text
 
-    @validator('sender')
+    @validator("sender")
     def validate_sender_exists(cls, sender):
         if sender not in users:
             raise HTTPException(status_code=400, detail="Sender user does not exist.")
         return sender
 
-    @validator('recipient')
+    @validator("recipient")
     def validate_recipient_exists(cls, recipient):
         if recipient not in users:
             raise HTTPException(status_code=400, detail="Recipient user does not exist.")
