@@ -1,9 +1,10 @@
 import typing
 
+from graphene import ObjectType, String, Field, List, DateTime
 from fastapi import HTTPException
 from pydantic import BaseModel, validator
 
-from src.main.db.mock_database import users
+from src.main.db.mock_database import users, events
 
 
 class User(BaseModel):
@@ -56,3 +57,29 @@ class Message(BaseModel):
         if recipient not in users:
             raise HTTPException(status_code=400, detail="Recipient user does not exist.")
         return recipient
+
+
+class HelloQuery(ObjectType):
+    hello = String(name=String(default_value="world"))
+
+    def resolve_hello(self, info, name):
+        return "Hello {}!".format(name)
+
+
+class MetaData(ObjectType):
+    time = DateTime(required=True)
+    type = String()
+
+
+class Event(ObjectType):
+    text = String(required=True)
+    sender = String(required=True)
+    recipient = String(required=True)
+    metadata = Field(MetaData, required=True)
+
+
+class EventsFromDateQuery(ObjectType):
+    messages_list = List(Event, time=DateTime(required=True))
+
+    def resolve_messages_list(self, info, time):
+        return filter(lambda event: event.metadata.time >= time, events)
