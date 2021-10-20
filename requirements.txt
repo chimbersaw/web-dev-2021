@@ -1,6 +1,7 @@
-fastapi==0.68.1
+fastapi==0.70.0
 pydantic==1.8.2
 starlette==0.16.0
 typing-extensions==3.10.0.2
 uvicorn==0.15.0
 pytest==6.2.5
+SQLAlchemy==1.4.26

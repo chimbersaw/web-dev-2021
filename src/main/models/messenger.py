@@ -3,8 +3,6 @@ import typing
 from fastapi import HTTPException
 from pydantic import BaseModel, validator
 
-from src.main.db.mock_database import users
-
 
 class User(BaseModel):
     MAX_USERNAME_SIZE: typing.ClassVar = 20
@@ -23,6 +21,9 @@ class User(BaseModel):
         if len(username) == 0:
             raise HTTPException(status_code=400, detail="Username cannot be empty.")
         return username
+
+    class Config:
+        orm_mode = True
 
 
 class Message(BaseModel):
@@ -46,13 +47,14 @@ class Message(BaseModel):
         return text
 
     @validator("sender")
-    def validate_sender_exists(cls, sender):
-        if sender not in users:
-            raise HTTPException(status_code=400, detail="Sender user does not exist.")
+    def validate_sender(cls, sender):
+        User(username=sender)
         return sender
 
     @validator("recipient")
-    def validate_recipient_exists(cls, recipient):
-        if recipient not in users:
-            raise HTTPException(status_code=400, detail="Recipient user does not exist.")
+    def validate_recipient(cls, recipient):
+        User(username=recipient)
         return recipient
+
+    class Config:
+        orm_mode = True

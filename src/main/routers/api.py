@@ -1,7 +1,12 @@
-from fastapi import APIRouter, Response
+from fastapi import APIRouter, Depends, Response, HTTPException
 from fastapi.responses import PlainTextResponse
 from src.main.models.messenger import User, Message
-from src.main.db.mock_database import users, messages_received
+from sqlalchemy.orm import Session
+from src.main.db import database
+from src.main.db import crud
+from typing import List
+
+database.Base.metadata.create_all(bind=database.engine)
 
 router = APIRouter()
 
@@ -17,23 +22,24 @@ def say_hello(username: str = "world"):
 
 
 @router.post("/api/user/add")
-def add_user(user: User):
-    name = user.username
-    if name in users:
+def add_user(user: User, db: Session = Depends(database.get_database)):
+    if not crud.add_user(db, user):
         return PlainTextResponse(status_code=400, content="User already exists.")
-    users.append(name)
-    messages_received[name] = []
     return Response(status_code=200)
-
-
-@router.get("/api/message/{username}", response_model=list[Message])
-def get_messages(username: str):
-    if username not in users:
-        return PlainTextResponse(status_code=400, content="No user with username {}.".format(username))
-    return messages_received[username]
 
 
 @router.post("/api/message/send")
-def send_message(message: Message):
-    messages_received[message.recipient].append(message)
+def send_message(message: Message, db: Session = Depends(database.get_database)):
+    if not crud.user_exists(db, message.sender):
+        raise HTTPException(status_code=400, detail="Sender user does not exist.")
+    if not crud.user_exists(db, message.recipient):
+        raise HTTPException(status_code=400, detail="Recipient user does not exist.")
+    crud.send_message(db, message)
     return Response(status_code=200)
+
+
+@router.get("/api/message/{username}", response_model=List[Message])
+def get_messages(username: str, db: Session = Depends(database.get_database)):
+    if not crud.user_exists(db, username):
+        return PlainTextResponse(status_code=400, content="No user with username {}.".format(username))
+    return crud.get_messages(db, username)
